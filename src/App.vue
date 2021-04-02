@@ -1,28 +1,46 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div v-if="serverError" data-testid="server-error">
+      {{ serverError }}
+    </div>
+
+    <div v-else-if="todos.length === 0" data-testid="no-todos">
+      No todos !
+    </div>
+
+    <div v-else>
+      <ul id="todos">
+        <li
+          v-for="todo in todos"
+          v-bind:key="todo.id"
+          :data-testid="'todo-' + todo.id"
+        >
+          {{ todo.content }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "App",
+  data() {
+    return {
+      todos: [],
+      serverError: null,
+    };
+  },
+  mounted() {
+    fetch("/api/todos")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.error) {
+          this.serverError = json.error;
+        } else {
+          this.todos = json.todos;
+        }
+      });
+  },
+};
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
